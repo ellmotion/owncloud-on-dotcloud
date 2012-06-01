@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Source the INSTALL_DIRECTORY variable
+[ -f ~/profile ] && . ~/profile
+
+
+cat > ~/run <<EOF
+#!/bin/bash
+if ps -aux | grep -v grep | grep lighttpd; then
+        echo "Error"
+else
+
+	sed -i -e "s/\# server.port               = 81/server.port               = $PORT_WWW/g" $LIGHTTPD_DIR/lighttpd.conf
+	lighttpd -f $LIGHTTPD_DIR/lighttpd.conf
+fi
+EOF
+chmod +x ~/run

@@ -1,0 +1,12 @@
+owncloud:
+  type: custom
+  buildscript: ownCloud/builder
+  systempackages:
+     - lighttpd
+     - php5-cgi
+     - sqlite
+     - php5-sqlite
+     - php5-gd
+     - php5-common
+  ports:
+    www: http

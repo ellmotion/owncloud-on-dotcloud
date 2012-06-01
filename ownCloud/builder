@@ -1,0 +1,52 @@
+#!/bin/bash
+
+WWW_DIR="$HOME/www"
+LIGHTTPD_DIR="$HOME/lighttpd"
+OC_PACKAGE="http://download.owncloud.com/download/owncloud-2012.0.3-enterprise.tar.bz2"
+PLUGINS_PACKAGE="http://download.owncloud.com/download/owncloud-2012.0.3-enterprise-unsupported.tar.bz2"
+
+cd
+
+#ownCloud install
+if [ -d $WWW_DIR ]; then
+	echo "Web Interface is already setup"
+else
+	mkdir $WWW_DIR
+	mkdir ~/data
+	wget "$OC_PACKAGE"
+	tar -xjf owncloud-2012.0.3-enterprise.tar.bz2
+	mv ./owncloud/* $WWW_DIR/
+	wget "$PLUGINS_PACKAGE"
+	tar -xjf owncloud-2012.0.3-enterprise-unsupported.tar.bz2
+	mv ./owncloud-unsupported/apps/* $WWW_DIR/apps/
+	rm -rf ownc*
+
+fi
+
+
+
+#Lighttpd config
+if [ -d $LIGHTTPD_DIR ]; then
+	echo "Lighttpd is already config"
+else
+	mkdir lighttpd
+	cp /etc/lighttpd/lighttpd.conf $LIGHTTPD_DIR
+	sed -i -e "s/\"mod_access\",/\"mod_access\",\n            \"mod_fastcgi\",/g" $LIGHTTPD_DIR/lighttpd.conf
+	sed -i -e "s/\"\/var\/www\/\"/\"\/home\/dotcloud\/www\/\"/g" $LIGHTTPD_DIR/lighttpd.conf
+	sed -i -e "s/\"\/var\/cache\/lighttpd\/uploads\"/\"\/home\/dotcloud\/lighttpd\/uploads\"/g" $LIGHTTPD_DIR/lighttpd.conf
+	sed -i -e "s/\"\/var\/log\/lighttpd\/error.log\"/\"\/home\/dotcloud\/lighttpd\/error.log\"/g" $LIGHTTPD_DIR/lighttpd.conf
+	sed -i -e "s/\"\/var\/log\/lighttpd\/access.log\"/\"\/home\/dotcloud\/lighttpd\/access.log\"/g" $LIGHTTPD_DIR/lighttpd.conf
+	sed -i -e "s/\"\/var\/run\/lighttpd.pid\"/\"\/home\/dotcloud\/lighttpd\/lighttpd.pid\"/g" $LIGHTTPD_DIR/lighttpd.conf
+	sed -i -e "s/\"www-data\"/\"dotcloud\"/g" $LIGHTTPD_DIR/lighttpd.conf
+	echo "fastcgi.server = ( \".php\" =>
+    (( \"socket\" => \"/tmp/php5-fastcgi.socket\",
+        \"bin-path\" => \"/usr/bin/php5-cgi\"
+    ))
+  )" >> $LIGHTTPD_DIR/lighttpd.conf
+
+fi
+
+cat > ~/profile << EOF
+WWW_DIR="$HOME/www"
+LIGHTTPD_DIR="$HOME/lighttpd"
+EOF
